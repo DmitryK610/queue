@@ -1,11 +1,20 @@
-<script setup lang="ts"></script>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import TeacherQueue from './components/TeacherQueue.vue';
+import StudentQueue from './components/StudentQueue.vue';
+
+const isStudent = ref(false);
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search);
+  isStudent.value = !!params.get('queue');
+});
+</script>
+
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <TeacherQueue v-if="!isStudent" />
+  <StudentQueue v-else />
 </template>
 
 <style scoped></style>

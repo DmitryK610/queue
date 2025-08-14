@@ -21,21 +21,36 @@ const queue = ref<string[]>([]);
 const joined = ref(false);
 const queueId = ref<string | null>(null);
 
-onMounted(() => {
+onMounted(async () => {
   const params = new URLSearchParams(window.location.search);
   queueId.value = params.get('queue');
   if (queueId.value) {
-    const saved = localStorage.getItem('queue-' + queueId.value);
-    queue.value = saved ? JSON.parse(saved) : [];
+    try {
+      const res = await fetch(`/api/queues/${queueId.value}/`);
+      if (res.ok) {
+        const data = await res.json();
+        queue.value = data.queue || [];
+      }
+    } catch (e) {}
   }
 });
 
-function joinQueue() {
+async function joinQueue() {
   if (!queueId.value) return;
   if (!queue.value.includes(name.value)) {
-    queue.value.push(name.value);
-    localStorage.setItem('queue-' + queueId.value, JSON.stringify(queue.value));
-    joined.value = true;
+    try {
+      const res = await fetch('/api/queues/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.value, queue_id: queueId.value })
+      });
+      if (res.ok) {
+        queue.value.push(name.value);
+        joined.value = true;
+      }
+    } catch (e) {
+      // обработка ошибки
+    }
   }
 }
 </script>
